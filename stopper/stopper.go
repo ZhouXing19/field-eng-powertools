@@ -21,6 +21,7 @@ package stopper
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
 	"time"
 )
@@ -240,10 +241,12 @@ func (c *Context) IsStopping() bool {
 // context will be forcefully cancelled if the goroutines have not
 // exited within the given timeframe.
 func (c *Context) Stop(gracePeriod time.Duration) {
+	fmt.Println("stopper ctx Stop called")
 	if c == background {
 		return
 	}
 	c.mu.Lock()
+	fmt.Println("stopper ctx Stop lock acquired")
 	defer c.mu.Unlock()
 
 	if c.mu.stopping {
@@ -251,18 +254,22 @@ func (c *Context) Stop(gracePeriod time.Duration) {
 	}
 	c.mu.stopping = true
 	close(c.stopping)
+	fmt.Println("stopper ctx c.stopping closed")
 
 	// Cancel the context if nothing's currently running.
 	if c.mu.count == 0 {
+		fmt.Println("stopper ctx stopped for count == 0")
 		c.cancelLocked(ErrStopped)
 	} else if gracePeriod > 0 {
 		go func() {
 			select {
 			case <-time.After(gracePeriod):
+				fmt.Println("stopper ctx stopped for graceperiod expired")
 				// Cancel after the grace period has expired. This
 				// should immediately terminate any well-behaved
 				// goroutines driven by Go().
 				c.mu.Lock()
+				fmt.Println("stopper ctx Stop acquired Lock")
 				defer c.mu.Unlock()
 				c.cancelLocked(ErrGracePeriodExpired)
 			case <-c.Done():

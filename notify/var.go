@@ -41,6 +41,7 @@ type Var[T any] struct {
 		data    T
 		updated chan struct{}
 	}
+	Name string
 }
 
 // VarOf constructs a Var set to the initial value.

@@ -90,6 +90,7 @@ func WaitForChange[T comparable](
 		case <-changed:
 			continue
 		case <-ctx.Stopping():
+			fmt.Printf("[%s] context stopped, exit WaitForChange\n", source.Name)
 			return current, changed
 		}
 	}
